@@ -1,24 +1,18 @@
 package main
 
 import (
+	"REST_Server/internal/taskstore"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
 
-	"REST_Server/taskstore"
-
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
 
-func init() {
-	if err := godotenv.Load(); err != nil {
-		log.Print("No .env file found")
-	}
-}
-
 func main() {
+	initEnv()
 	router := gin.Default()
 	taskstore.Open()
 	defer taskstore.Close()
@@ -31,6 +25,12 @@ func main() {
 	router.GET("/due/:year/:month/:day", dueHandler)
 
 	router.Run()
+}
+
+func initEnv() {
+	if err := godotenv.Load("./.env"); err != nil {
+		log.Println("No .env file found")
+	}
 }
 
 func createTaskHandler(c *gin.Context) {

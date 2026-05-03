@@ -27,4 +27,4 @@ services:
       DATABASE_HOST: ${DB_HOST}
 
     volumes:
-      - ./Scripts/tasks_script_init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./scripts/tasks_script_init.sql:/docker-entrypoint-initdb.d/init.sql

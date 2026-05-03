@@ -1,8 +1,9 @@
 FROM golang:latest
 WORKDIR /app
-COPY go.mod go.sum ./
-RUN go mod download
+RUN go mod init github.com/DmitriiUs/REST_Server
 COPY . .
+COPY .env /app/cmd/REST_Server/
+WORKDIR /app/cmd/REST_Server/
 RUN go build -o api
 EXPOSE 3030
 
