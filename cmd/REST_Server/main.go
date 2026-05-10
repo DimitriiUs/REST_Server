@@ -8,11 +8,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	initEnv()
 	router := gin.Default()
 	taskstore.Open()
 	defer taskstore.Close()
@@ -25,12 +23,6 @@ func main() {
 	router.GET("/due/:year/:month/:day", dueHandler)
 
 	router.Run()
-}
-
-func initEnv() {
-	if err := godotenv.Load("./.env"); err != nil {
-		log.Println("No .env file found")
-	}
 }
 
 func createTaskHandler(c *gin.Context) {
