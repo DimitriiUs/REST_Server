@@ -14,16 +14,16 @@ type Task struct {
 	Due  time.Time `json:"due"`
 }
 
-func CreateTask(text string, due time.Time) int {
+func CreateTask(text string, due time.Time) (int, error) {
 
 	row := pool.QueryRow(context.Background(), "INSERT INTO tasks (task_description, due_date) VALUES ($1, $2) RETURNING task_id", text, due.Format(time.DateTime))
-	var count int
-	if err := row.Scan(&count); err != nil {
+	var id int
+	if err := row.Scan(&id); err != nil {
 		log.Fatal(err)
-
+		return -1, err
 	}
 
-	return count
+	return id, nil
 }
 
 func GetTask(id int) (Task, error) {
@@ -53,7 +53,7 @@ func DeleteAllTasks() (string, error) {
 	}
 
 	if res.RowsAffected() == 0 {
-		return "", errors.New("No tasks were deleted")
+		return "", errors.New("no tasks were deleted")
 	}
 	return fmt.Sprintf("Deleted %d tasks", res.RowsAffected()), nil
 }
