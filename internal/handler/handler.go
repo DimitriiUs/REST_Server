@@ -13,11 +13,11 @@ import (
 
 type TaskService interface {
 	GetAllTasks() ([]model.Task, error)
-	GetTaskByID(c *gin.Context) (model.Task, error)
-	CreateTask(c *gin.Context) (int, error)
-	DeleteTaskByID(c *gin.Context) (string, error)
-	DeleteAllTasks(c *gin.Context) (string, error)
-	GetTaskByDueDate(c *gin.Context) (model.Task, error)
+	GetTaskByID(ids string) (model.Task, error)
+	CreateTask(description string, due time.Time) (int, error)
+	DeleteTaskByID(ids string) (string, error)
+	DeleteAllTasks() (string, error)
+	GetTaskByDueDate(year string, month string, day string) ([]model.Task, error)
 }
 
 type handler struct {
@@ -25,7 +25,7 @@ type handler struct {
 }
 
 func NewHandler(service TaskService) *handler {
-	return &handler{service: service}
+	return &handler{service}
 }
 
 func (h *handler) GetAllTasks(c *gin.Context) {
@@ -39,7 +39,25 @@ func (h *handler) GetAllTasks(c *gin.Context) {
 	c.JSON(http.StatusOK, tasks)
 }
 
-func createTaskHandler(c *gin.Context) {
+func (h *handler) GetTaskByID(c *gin.Context) {
+	ids := c.Param("id")
+	id, err := strconv.Atoi(ids)
+	if err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		log.Println(err)
+		return
+	}
+
+	task, err := taskstore.GetTask(id)
+	if err != nil {
+		c.String(http.StatusNotFound, err.Error())
+		log.Println(err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"id": task.Id, "text": task.Text, "due": task.Due})
+}
+
+func (h *handler) createTaskHandler(c *gin.Context) {
 	type RequestTask struct {
 		Text string    `json:"text"`
 		Due  time.Time `json:"due"`
@@ -70,34 +88,6 @@ func createTaskHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"id": id})
 }
 
-func getTaskHandler(c *gin.Context) {
-	ids := c.Param("id")
-	id, err := strconv.Atoi(ids)
-	if err != nil {
-		c.String(http.StatusBadRequest, err.Error())
-		log.Println(err)
-		return
-	}
-
-	task, err := taskstore.GetTask(id)
-	if err != nil {
-		c.String(http.StatusNotFound, err.Error())
-		log.Println(err)
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"id": task.Id, "text": task.Text, "due": task.Due})
-}
-
-func deleteAllTasksHandler(c *gin.Context) {
-	msg, err := taskstore.DeleteAllTasks()
-	if err != nil {
-		c.String(http.StatusPreconditionFailed, err.Error())
-		log.Println(err)
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"msg": msg})
-}
-
 func deleteTaskHandler(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
@@ -113,6 +103,16 @@ func deleteTaskHandler(c *gin.Context) {
 		return
 	}
 	c.String(http.StatusOK, msg)
+}
+
+func deleteAllTasksHandler(c *gin.Context) {
+	msg, err := taskstore.DeleteAllTasks()
+	if err != nil {
+		c.String(http.StatusPreconditionFailed, err.Error())
+		log.Println(err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"msg": msg})
 }
 
 func dueHandler(c *gin.Context) {

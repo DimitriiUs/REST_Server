@@ -14,16 +14,22 @@ type Task struct {
 	Due  time.Time `json:"due"`
 }
 
-func CreateTask(text string, due time.Time) (int, error) {
-
-	row := pool.QueryRow(context.Background(), "INSERT INTO tasks (task_description, due_date) VALUES ($1, $2) RETURNING task_id", text, due.Format(time.DateTime))
-	var id int
-	if err := row.Scan(&id); err != nil {
-		log.Fatal(err)
-		return -1, err
+func GetAllTasks() ([]Task, error) {
+	rows, err := pool.Query(context.Background(), "SELECT * FROM tasks")
+	if err != nil {
+		return nil, err
 	}
+	defer rows.Close()
 
-	return id, nil
+	var allTasks []Task
+	for rows.Next() {
+		task := Task{}
+		if err := rows.Scan(&task.Id, &task.Text, &task.Due); err != nil {
+			return nil, err
+		}
+		allTasks = append(allTasks, task)
+	}
+	return allTasks, nil
 }
 
 func GetTask(id int) (Task, error) {
@@ -34,6 +40,18 @@ func GetTask(id int) (Task, error) {
 	}
 
 	return task, nil
+}
+
+func CreateTask(text string, due time.Time) (int, error) {
+
+	row := pool.QueryRow(context.Background(), "INSERT INTO tasks (task_description, due_date) VALUES ($1, $2) RETURNING task_id", text, due.Format(time.DateTime))
+	var id int
+	if err := row.Scan(&id); err != nil {
+		log.Fatal(err)
+		return -1, err
+	}
+
+	return id, nil
 }
 
 func DeleteTask(id int) (string, error) {
@@ -56,24 +74,6 @@ func DeleteAllTasks() (string, error) {
 		return "", errors.New("no tasks were deleted")
 	}
 	return fmt.Sprintf("Deleted %d tasks", res.RowsAffected()), nil
-}
-
-func GetAllTasks() ([]Task, error) {
-	rows, err := pool.Query(context.Background(), "SELECT * FROM tasks")
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var allTasks []Task
-	for rows.Next() {
-		task := Task{}
-		if err := rows.Scan(&task.Id, &task.Text, &task.Due); err != nil {
-			return nil, err
-		}
-		allTasks = append(allTasks, task)
-	}
-	return allTasks, nil
 }
 
 func GetTasksByDueDate(year int, month time.Month, day int) ([]Task, error) {
