@@ -43,7 +43,7 @@ func (s *service) CreateTask(description string, due time.Time) (int, error) {
 		//log
 		return 0, errors.New("description is required")
 	}
-	if rt.Due.IsZero() {
+	if due.IsZero() {
 		//log
 		return 0, errors.New("due is required")
 	}
@@ -63,4 +63,25 @@ func (s *service) DeleteAllTasks() (string, error) {
 	return s.repo.DeleteAllTasks()
 }
 
-func (s *service) GetTaskByDueDate(year string, month string, day string) ([]model.Task, error) {}
+func (s *service) GetTasksByDue(year string, month string, day string) ([]model.Task, error) {
+	intYear, err := strconv.Atoi(year)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	intMonth, err := strconv.Atoi(month)
+	if err != nil || intMonth < int(time.January) || intMonth > int(time.December) {
+		log.Println(err)
+		return nil, err
+	}
+
+	intDay, err := strconv.Atoi(day)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	dueDate := time.Date(intYear, time.Month(intMonth), intDay, 0, 0, 0, 0, time.UTC)
+
+	return s.repo.GetTaskByDueDate(dueDate)
+}
