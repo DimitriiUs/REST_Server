@@ -12,8 +12,8 @@ type TaskRepository interface {
 	GetAllTasks() ([]model.Task, error)
 	GetTaskByID(id int) (model.Task, error)
 	CreateTask(description string, due time.Time) (int, error)
-	DeleteTaskByID(id int) (string, error)
-	DeleteAllTasks() (string, error)
+	DeleteTaskByID(id int) error
+	DeleteAllTasks() error
 	GetTaskByDueDate(due time.Time) ([]model.Task, error)
 }
 
@@ -50,16 +50,16 @@ func (s *service) CreateTask(description string, due time.Time) (int, error) {
 	return s.repo.CreateTask(description, due)
 }
 
-func (s *service) DeleteTaskByID(ids string) (string, error) {
+func (s *service) DeleteTaskByID(ids string) error {
 	id, err := strconv.Atoi(ids)
 	if err != nil {
 		log.Println(err)
-		return "", err
+		return err
 	}
 	return s.repo.DeleteTaskByID(id)
 }
 
-func (s *service) DeleteAllTasks() (string, error) {
+func (s *service) DeleteAllTasks() error {
 	return s.repo.DeleteAllTasks()
 }
 

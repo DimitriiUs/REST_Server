@@ -9,7 +9,7 @@ import (
 
 type mockTaskRepository struct {
 	testTasks    map[int]model.Task
-	ID           int
+	nextID       int
 	getByIDError error
 }
 
@@ -36,13 +36,19 @@ func (m *mockTaskRepository) GetTaskByID(id int) (model.Task, error) {
 }
 
 func (m *mockTaskRepository) CreateTask(description string, due time.Time) (int, error) {
-	//TODO implement me
-	panic("implement me")
+	task := model.Task{
+		ID:   m.nextID,
+		Text: description,
+		Due:  due,
+	}
+
+	m.testTasks[m.nextID] = task
+	m.nextID++
+	return task.ID, nil
 }
 
 func (m *mockTaskRepository) DeleteTaskByID(id int) (string, error) {
-	//TODO implement me
-	panic("implement me")
+	task
 }
 
 func (m *mockTaskRepository) DeleteAllTasks() (string, error) {

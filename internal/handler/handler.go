@@ -13,8 +13,8 @@ type TaskService interface {
 	GetAllTasks() ([]model.Task, error)
 	GetTaskByID(ids string) (model.Task, error)
 	CreateTask(description string, due time.Time) (int, error)
-	DeleteTaskByID(ids string) (string, error)
-	DeleteAllTasks() (string, error)
+	DeleteTaskByID(ids string) error
+	DeleteAllTasks() error
 	GetTasksByDue(year string, month string, day string) ([]model.Task, error)
 }
 
@@ -75,22 +75,24 @@ func (h *handler) CreateTask(c *gin.Context) {
 func (h *handler) DeleteTaskByID(c *gin.Context) {
 	ids := c.Param("id")
 
-	msg, err := h.service.DeleteTaskByID(ids)
+	err := h.service.DeleteTaskByID(ids)
 	if err != nil {
 		c.String(http.StatusNotFound, err.Error())
 		log.Println(err)
 		return
 	}
+	msg := "task was deleted"
 	c.String(http.StatusNoContent, msg)
 }
 
 func (h *handler) DeleteAllTasks(c *gin.Context) {
-	msg, err := h.service.DeleteAllTasks()
+	err := h.service.DeleteAllTasks()
 	if err != nil {
 		c.String(http.StatusPreconditionFailed, err.Error())
 		log.Println(err)
 		return
 	}
+	msg := "all tasks was deleted"
 	c.String(http.StatusNoContent, msg)
 }
 
