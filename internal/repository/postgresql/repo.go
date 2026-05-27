@@ -1,35 +1,45 @@
 package postgresql
 
 import (
+	"REST_Server/internal/errors"
 	"REST_Server/internal/model"
+
 	"context"
-	"errors"
-	"fmt"
-	"log"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
+type PgxPoolIFace interface {
+	Begin(ctx context.Context) (pgx.Tx, error)
+	Exec(ctx context.Context, sql string, arguments ...any) (pgconn.CommandTag, error)
+	Query(ctx context.Context, sql string, args ...any) (pgx.Rows, error)
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
+	Ping(ctx context.Context) error
+	Close()
+}
 type repo struct {
-	pool *pgxpool.Pool
+	db PgxPoolIFace
 }
 
-func NewRepo(pool *pgxpool.Pool) *repo {
-	return &repo{pool: pool}
+func NewRepo(db PgxPoolIFace) *repo {
+	return &repo{db: db}
 }
 
 func (r *repo) GetAllTasks() ([]model.Task, error) {
-	rows, err := r.pool.Query(context.Background(), "SELECT * FROM tasks")
+	query := "SELECT * FROM tasks"
+
+	rows, err := r.db.Query(context.Background(), query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var allTasks []model.Task
+	allTasks := make([]model.Task, 0, 100)
 	for rows.Next() {
 		task := model.Task{}
-		if err := rows.Scan(&task.Id, &task.Text, &task.Due); err != nil {
+		if err := rows.Scan(&task.ID, &task.Text, &task.Due); err != nil {
 			return nil, err
 		}
 		allTasks = append(allTasks, task)
@@ -38,9 +48,13 @@ func (r *repo) GetAllTasks() ([]model.Task, error) {
 }
 
 func (r *repo) GetTaskByID(id int) (model.Task, error) {
+	query := "SELECT * FROM tasks WHERE task_id = $1"
 	task := model.Task{}
-	row := r.pool.QueryRow(context.Background(), "SELECT * FROM tasks WHERE task_id = $1", id)
-	if err := row.Scan(&task.Id, &task.Text, &task.Due); err != nil {
+
+	row := r.db.QueryRow(context.Background(),
+		query,
+		id)
+	if err := row.Scan(&task.ID, &task.Text, &task.Due); err != nil {
 		return model.Task{}, err
 	}
 
@@ -48,46 +62,55 @@ func (r *repo) GetTaskByID(id int) (model.Task, error) {
 }
 
 func (r *repo) CreateTask(description string, due time.Time) (int, error) {
-	row := r.pool.QueryRow(context.Background(),
-		"INSERT INTO tasks (task_description, due_date) VALUES ($1, $2) RETURNING task_id",
+	query := `
+	INSERT INTO tasks 
+    (task_description, due_date) 
+	VALUES ($1, $2) 
+	RETURNING task_id`
+
+	row := r.db.QueryRow(context.Background(),
+		query,
 		description,
 		due.Format(time.DateTime))
 	var id int
 	if err := row.Scan(&id); err != nil {
-		log.Fatal(err)
 		return -1, err
 	}
 
 	return id, nil
 }
 
-func (r *repo) DeleteTaskByID(id int) (string, error) {
-	row := r.pool.QueryRow(context.Background(),
-		"DELETE FROM tasks WHERE task_id = $1 RETURNING task_description",
+func (r *repo) DeleteTaskByID(id int) error {
+	query := "DELETE FROM tasks WHERE task_id = $1 RETURNING task_id"
+
+	row := r.db.QueryRow(context.Background(),
+		query,
 		id)
-	var description string
-	if err := row.Scan(&description); err != nil {
-		return "", err
+	var ids int
+	if err := row.Scan(&ids); err != nil {
+		return err
+	}
+	if ids == 0 {
+		return errors.ErrNotFound
 	}
 
-	return fmt.Sprintf("Task: `%s` was deleted", description), nil
+	return nil
 }
 
-func (r *repo) DeleteAllTasks() (string, error) {
-	res, err := r.pool.Exec(context.Background(), "TRUNCATE TABLE tasks")
+func (r *repo) DeleteAllTasks() error {
+	_, err := r.db.Exec(context.Background(), "TRUNCATE TABLE tasks")
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	if res.RowsAffected() == 0 {
-		return "", errors.New("no tasks were deleted")
-	}
-	return fmt.Sprintf("Deleted %d tasks", res.RowsAffected()), nil
+	return nil
 }
 
 func (r *repo) GetTaskByDueDate(due time.Time) ([]model.Task, error) {
-	rows, err := r.pool.Query(context.Background(),
-		"SELECT * FROM tasks WHERE due_date = $1",
+	query := "SELECT * FROM tasks WHERE due_date = $1"
+
+	rows, err := r.db.Query(context.Background(),
+		query,
 		due)
 	if err != nil {
 		return nil, err
@@ -97,14 +120,11 @@ func (r *repo) GetTaskByDueDate(due time.Time) ([]model.Task, error) {
 	var tasks []model.Task
 	for rows.Next() {
 		task := model.Task{}
-		if err := rows.Scan(&task.Id, &task.Text, &task.Due); err != nil {
+		if err := rows.Scan(&task.ID, &task.Text, &task.Due); err != nil {
 			return nil, err
 		}
 		tasks = append(tasks, task)
 	}
 
-	if tasks == nil {
-		return nil, errors.New("no tasks were found")
-	}
 	return tasks, nil
 }

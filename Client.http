@@ -17,7 +17,7 @@ DELETE http://localhost:3030/tasks
 DELETE http://localhost:3030/task/112
 
 ### GET request: get tasks by due
-GET http://localhost:3030/task/2026/5/19
+GET http://localhost:3030/task/due/2026/5/19
 
 ### GET request: get all tasks
 GET http://localhost:3030/tasks

@@ -17,5 +17,5 @@ func RegisterRoutes(server *gin.Engine, taskHandler TaskHandler) {
 	server.GET("/task/:id", taskHandler.GetTaskByID)
 	server.DELETE("/task/:id", taskHandler.DeleteTaskByID)
 	server.DELETE("/tasks", taskHandler.DeleteAllTasks)
-	server.GET("/task/:year/:month/:day", taskHandler.GetTasksByDue)
+	server.GET("/task/due/:year/:month/:day", taskHandler.GetTasksByDue)
 }

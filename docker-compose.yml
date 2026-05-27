@@ -18,6 +18,7 @@ services:
 
   migrations:
     image: ghcr.io/kukymbr/goose-docker
+    restart: no
     volumes:
       - ./migrations:/migrations
     env_file:
