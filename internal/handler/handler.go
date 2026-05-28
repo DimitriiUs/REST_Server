@@ -47,7 +47,7 @@ func (h *handler) GetTaskByID(c *gin.Context) {
 		log.Println(err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"id": task.Id, "text": task.Text, "due": task.Due})
+	c.JSON(http.StatusOK, gin.H{"id": task.ID, "text": task.Text, "due": task.Due})
 }
 
 func (h *handler) CreateTask(c *gin.Context) {

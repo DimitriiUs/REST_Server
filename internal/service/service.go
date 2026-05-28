@@ -1,7 +1,9 @@
 package service
 
 import (
+	errs "REST_Server/internal/errors"
 	"REST_Server/internal/model"
+
 	"errors"
 	"log"
 	"strconv"
@@ -33,7 +35,7 @@ func (s *service) GetTaskByID(ids string) (model.Task, error) {
 	id, err := strconv.Atoi(ids)
 	if err != nil {
 		log.Println(err)
-		return model.Task{}, err
+		return model.Task{}, errs.ErrInvalidID
 	}
 	return s.repo.GetTaskByID(id)
 }
