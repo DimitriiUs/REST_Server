@@ -50,6 +50,9 @@ func (r *repo) GetTaskByID(id int) (model.Task, error) {
 		return model.Task{}, err
 	}
 
+	if task.IsEmpty() {
+		return model.Task{}, errors.ErrNotFound
+	}
 	return task, nil
 }
 

@@ -92,23 +92,11 @@ func TestGetAllTasks_Empty(t *testing.T) {
 func TestGetAllTasks_Success(t *testing.T) {
 	taskRepo := &mockTaskRepository{
 		testTasks: map[int]model.Task{
-			1: model.Task{
-				ID:   1,
-				Text: "test",
-				Due:  time.Now(),
-			},
-			2: model.Task{
-				ID:   2,
-				Text: "test1",
-				Due:  time.Now(),
-			},
-			3: model.Task{
-				ID:   3,
-				Text: "test2",
-				Due:  time.Now(),
-			},
+			1: model.Task{ID: 1, Text: "test", Due: time.Now()},
+			2: model.Task{ID: 2, Text: "test1", Due: time.Now()},
+			3: model.Task{ID: 3, Text: "test2", Due: time.Now()},
 		},
-		nextID: 3,
+		nextID: 4,
 	}
 
 	service := NewService(taskRepo)
@@ -119,14 +107,7 @@ func TestGetAllTasks_Success(t *testing.T) {
 }
 
 func TestGetTaskByID_InvalidID(t *testing.T) {
-	taskRepo := &mockTaskRepository{
-		testTasks: map[int]model.Task{
-			1: model.Task{ID: 1, Text: "test", Due: time.Now()},
-			2: model.Task{ID: 2, Text: "test1", Due: time.Now()},
-			3: model.Task{ID: 3, Text: "test2", Due: time.Now()},
-		},
-		nextID: 3,
-	}
+	taskRepo := &mockTaskRepository{}
 
 	service := NewService(taskRepo)
 
@@ -136,18 +117,60 @@ func TestGetTaskByID_InvalidID(t *testing.T) {
 }
 
 func TestGetTaskByID_NotFound(t *testing.T) {
+	taskRepo := &mockTaskRepository{
+		testTasks: map[int]model.Task{
+			1: model.Task{ID: 1, Text: "test", Due: time.Now()},
+			2: model.Task{ID: 2, Text: "test1", Due: time.Now()},
+			3: model.Task{ID: 3, Text: "test2", Due: time.Now()},
+		},
+		nextID: 4,
+	}
 
+	service := NewService(taskRepo)
+	_, err := service.GetTaskByID("5")
+	require.ErrorIs(t, err, errors.ErrNotFound)
 }
 
-func TestCreateTask_InvalidID(t *testing.T) {
+func TestCreateTask_InvalidDescription(t *testing.T) {
+	taskRepo := &mockTaskRepository{}
+	service := NewService(taskRepo)
+
+	_, err := service.CreateTask("", time.Now())
+
+	require.Error(t, err, errors.ErrInvalidDescription)
+}
+
+func TestCreateTask_InvalidDueDate(t *testing.T) {
+	taskRepo := &mockTaskRepository{}
+	service := NewService(taskRepo)
+
+	_, err := service.CreateTask("test task", time.Time{})
+
+	require.Error(t, err, errors.ErrInvalidDueDate)
+}
+
+func TestCreateTask_Success(t *testing.T) {
 	taskRepo := &mockTaskRepository{
-		testTasks: make(map[int]model.Task),
-		nextID:    7,
+		testTasks: map[int]model.Task{
+			1: model.Task{ID: 1, Text: "test", Due: time.Now()},
+			2: model.Task{ID: 2, Text: "test1", Due: time.Now()},
+			3: model.Task{ID: 3, Text: "test2", Due: time.Now()},
+		},
+		nextID: 4,
 	}
 	service := NewService(taskRepo)
 
 	id, err := service.CreateTask("test task", time.Now())
 
-	require.Error(t, err)
+	require.NoError(t, err)
+	require.Equal(t, id, 4)
+}
 
+func TestDeleteTaskByID_InvalidID(t *testing.T) {
+	taskRepo := &mockTaskRepository{}
+	service := NewService(taskRepo)
+
+	err := service.DeleteTaskByID("т")
+
+	require.Error(t, err, errors.ErrInvalidID)
 }

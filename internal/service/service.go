@@ -4,7 +4,6 @@ import (
 	errs "REST_Server/internal/errors"
 	"REST_Server/internal/model"
 
-	"errors"
 	"log"
 	"strconv"
 	"time"
@@ -43,11 +42,11 @@ func (s *service) GetTaskByID(ids string) (model.Task, error) {
 func (s *service) CreateTask(description string, due time.Time) (int, error) {
 	if description == "" {
 		//log
-		return 0, errors.New("description is required")
+		return 0, errs.ErrInvalidDescription
 	}
 	if due.IsZero() {
 		//log
-		return 0, errors.New("due is required")
+		return 0, errs.ErrInvalidDueDate
 	}
 	return s.repo.CreateTask(description, due)
 }
