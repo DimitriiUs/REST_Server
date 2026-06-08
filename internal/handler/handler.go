@@ -10,6 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+//go:generate go tool counterfeiter -o ../tests/fakes . TaskService
+
 type TaskService interface {
 	GetAllTasks() ([]model.Task, error)
 	GetTaskByID(ids string) (model.Task, error)
@@ -44,10 +46,15 @@ func (h *handler) GetAllTasks(c *gin.Context) {
 func (h *handler) GetTaskByID(c *gin.Context) {
 	ids := c.Param("id")
 
-	//Добавить ошибку ErrorNotFound, добавить проверку на ошибки
 	task, err := h.service.GetTaskByID(ids)
-	if err != nil {
+	if errors.Is(err, errs.ErrNotFound) {
 		c.String(http.StatusNotFound, err.Error())
+		return
+	} else if errors.Is(err, errs.ErrInvalidID) {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	} else if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"id": task.ID, "text": task.Text, "due": task.Due})
@@ -66,7 +73,13 @@ func (h *handler) CreateTask(c *gin.Context) {
 	}
 
 	id, err := h.service.CreateTask(rt.Text, rt.Due)
-	if err != nil {
+	if errors.Is(err, errs.ErrInvalidDescription) {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	} else if errors.Is(err, errs.ErrInvalidDueDate) {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	} else if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -78,8 +91,15 @@ func (h *handler) DeleteTaskByID(c *gin.Context) {
 	ids := c.Param("id")
 
 	err := h.service.DeleteTaskByID(ids)
-	if err != nil {
+
+	if errors.Is(err, errs.ErrNotFound) {
 		c.String(http.StatusNotFound, err.Error())
+		return
+	} else if errors.Is(err, errs.ErrInvalidID) {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	} else if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 	msg := "task was deleted"
@@ -89,7 +109,7 @@ func (h *handler) DeleteTaskByID(c *gin.Context) {
 func (h *handler) DeleteAllTasks(c *gin.Context) {
 	err := h.service.DeleteAllTasks()
 	if err != nil {
-		c.String(http.StatusPreconditionFailed, err.Error())
+		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 	msg := "all tasks was deleted"
@@ -102,8 +122,14 @@ func (h *handler) GetTasksByDue(c *gin.Context) {
 	day := c.Param("day")
 
 	tasks, err := h.service.GetTasksByDue(year, month, day)
-	if err != nil {
+	if errors.Is(err, errs.ErrNotFound) {
 		c.String(http.StatusNotFound, err.Error())
+		return
+	} else if errors.Is(err, errs.ErrInvalidDueDate) {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	} else if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 	c.JSON(http.StatusOK, tasks)

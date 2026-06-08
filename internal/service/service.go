@@ -64,8 +64,8 @@ func (s *service) CreateTask(description string, due time.Time) (int, error) {
 
 func (s *service) DeleteTaskByID(ids string) error {
 	id, err := strconv.Atoi(ids)
-	if err != nil {
-		return err
+	if err != nil || id == 0 {
+		return errs.ErrInvalidID
 	}
 	return s.repo.DeleteTaskByID(id)
 }

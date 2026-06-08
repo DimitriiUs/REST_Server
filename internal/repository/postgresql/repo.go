@@ -25,6 +25,7 @@ type repo struct {
 
 func NewRepo(db PgxPoolIFace) *repo {
 	return &repo{db: db}
+
 }
 
 func (r *repo) GetAllTasks() ([]model.Task, error) {
