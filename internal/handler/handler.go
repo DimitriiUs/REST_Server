@@ -1,13 +1,14 @@
 package handler
 
 import (
-	errs "REST_Server/internal/errors"
-	"REST_Server/internal/model"
 	"errors"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+
+	errs "REST_Server/internal/errors"
+	"REST_Server/internal/model"
 )
 
 //go:generate go tool counterfeiter -o ../tests/fakes . TaskService

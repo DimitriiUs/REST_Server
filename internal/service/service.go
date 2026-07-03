@@ -1,10 +1,11 @@
 package service
 
 import (
-	errs "REST_Server/internal/errors"
-	"REST_Server/internal/model"
 	"strconv"
 	"time"
+
+	errs "REST_Server/internal/errors"
+	"REST_Server/internal/model"
 )
 
 //go:generate go tool counterfeiter -o ../tests/fakes . TaskRepository

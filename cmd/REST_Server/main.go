@@ -1,9 +1,6 @@
 package main
 
 import (
-	"REST_Server/internal/handler"
-	"REST_Server/internal/repository/postgresql"
-	"REST_Server/internal/service"
 	"context"
 	"fmt"
 	"log"
@@ -11,6 +8,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
+
+	"REST_Server/internal/handler"
+	"REST_Server/internal/repository/postgresql"
+	"REST_Server/internal/service"
 )
 
 func main() {

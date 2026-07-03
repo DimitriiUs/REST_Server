@@ -1,14 +1,15 @@
 package tests
 
 import (
-	"REST_Server/internal/errors"
-	"REST_Server/internal/model"
-	"REST_Server/internal/service"
-	"REST_Server/internal/tests/fakes"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/require"
+
+	"REST_Server/internal/errors"
+	"REST_Server/internal/model"
+	"REST_Server/internal/service"
+	"REST_Server/internal/tests/fakes"
 )
 
 var (

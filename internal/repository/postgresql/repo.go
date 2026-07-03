@@ -1,14 +1,14 @@
 package postgresql
 
 import (
-	"REST_Server/internal/errors"
-	"REST_Server/internal/model"
-
 	"context"
 	"time"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
+
+	"REST_Server/internal/errors"
+	"REST_Server/internal/model"
 )
 
 type PgxPoolIFace interface {
