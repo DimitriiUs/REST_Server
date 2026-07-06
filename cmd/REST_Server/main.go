@@ -2,20 +2,21 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
-	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"REST_Server/internal/config"
 	"REST_Server/internal/handler"
 	"REST_Server/internal/repository/postgresql"
 	"REST_Server/internal/service"
 )
 
 func main() {
-	pool, err := pgxpool.New(context.Background(), getDBUrl())
+	config.LoadPostgresConfig()
+
+	pool, err := pgxpool.New(context.Background(), config.GetDBUrl())
 	if err != nil {
 		log.Fatalf("Unable to connection to database: %v\n", err)
 	}
@@ -29,13 +30,4 @@ func main() {
 	handler.RegisterRoutes(server, taskHandler)
 
 	server.Run()
-}
-
-func getDBUrl() string {
-	user := os.Getenv("DB_USER")
-	password := os.Getenv("DB_PASSWORD")
-	host := os.Getenv("DB_HOST")
-	port := os.Getenv("DB_PORT")
-	dbName := os.Getenv("DB_NAME")
-	return fmt.Sprintf("postgres://%s:%s@%s:%s/%s", user, password, host, port, dbName)
 }
