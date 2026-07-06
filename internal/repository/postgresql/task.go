@@ -48,7 +48,7 @@ func (r *repo) GetAllTasks() ([]model.Task, error) {
 	return allTasks, nil
 }
 
-func (r *repo) GetTaskByID(id int) (model.Task, error) {
+func (r *repo) GetTaskByID(id int) (*model.Task, error) {
 	query := "SELECT * FROM tasks WHERE task_id = $1"
 	task := model.Task{}
 
@@ -56,10 +56,10 @@ func (r *repo) GetTaskByID(id int) (model.Task, error) {
 		query,
 		id)
 	if err := row.Scan(&task.ID, &task.Text, &task.Due); err != nil {
-		return model.Task{}, err
+		return &task, err
 	}
 
-	return task, nil
+	return &task, nil
 }
 
 func (r *repo) CreateTask(description string, due time.Time) (int, error) {

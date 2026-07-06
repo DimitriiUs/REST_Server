@@ -12,7 +12,7 @@ import (
 
 type TaskRepository interface {
 	GetAllTasks() ([]model.Task, error)
-	GetTaskByID(id int) (model.Task, error)
+	GetTaskByID(id int) (*model.Task, error)
 	CreateTask(description string, due time.Time) (int, error)
 	DeleteTaskByID(id int) error
 	DeleteAllTasks() error
@@ -46,9 +46,9 @@ func (s *service) GetTaskByID(ids string) (model.Task, error) {
 	}
 
 	if task.IsEmpty() {
-		return task, errs.ErrNotFound
+		return *task, errs.ErrNotFound
 	}
-	return task, err
+	return *task, err
 }
 
 func (s *service) CreateTask(description string, due time.Time) (int, error) {

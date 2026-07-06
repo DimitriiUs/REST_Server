@@ -48,7 +48,7 @@ func TestServiceGetTaskByID_InvalidID(t *testing.T) {
 }
 
 func TestServiceGetTaskByID_NotFound(t *testing.T) {
-	fakeTestRepo.GetTaskByIDReturns(model.Task{}, nil)
+	fakeTestRepo.GetTaskByIDReturns(&model.Task{}, nil)
 
 	_, err := testService.GetTaskByID("5")
 
