@@ -1,14 +1,13 @@
-package tests
+package postgresql_test
 
 import (
+	"REST_Server/internal/repository/postgresql"
 	"errors"
 	"testing"
 	"time"
 
 	"github.com/pashagolub/pgxmock/v5"
 	"github.com/stretchr/testify/require"
-
-	"REST_Server/internal/repository/postgresql"
 )
 
 func TestRepoGetAllTasks_Empty(t *testing.T) {

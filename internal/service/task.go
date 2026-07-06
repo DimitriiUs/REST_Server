@@ -8,7 +8,7 @@ import (
 	"REST_Server/internal/model"
 )
 
-//go:generate go tool counterfeiter -o ../tests/fakes . TaskRepository
+//go:generate go tool counterfeiter -o /fake . TaskRepository
 
 type TaskRepository interface {
 	GetAllTasks() ([]model.Task, error)

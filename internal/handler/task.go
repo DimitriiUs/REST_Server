@@ -11,7 +11,7 @@ import (
 	"REST_Server/internal/model"
 )
 
-//go:generate go tool counterfeiter -o ../tests/fakes . TaskService
+//go:generate go tool counterfeiter -o /fake . TaskService
 
 type TaskService interface {
 	GetAllTasks() ([]model.Task, error)

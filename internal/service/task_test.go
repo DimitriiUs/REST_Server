@@ -1,4 +1,4 @@
-package tests
+package service_test
 
 import (
 	"testing"
@@ -9,11 +9,11 @@ import (
 	"REST_Server/internal/errors"
 	"REST_Server/internal/model"
 	"REST_Server/internal/service"
-	"REST_Server/internal/tests/fakes"
+	"REST_Server/internal/service/fake"
 )
 
 var (
-	fakeTestRepo = &fakes.FakeTaskRepository{}
+	fakeTestRepo = &fake.FakeTaskRepository{}
 	testService  = service.NewService(fakeTestRepo)
 )
 

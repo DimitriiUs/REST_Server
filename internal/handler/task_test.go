@@ -1,4 +1,4 @@
-package tests
+package handler_test
 
 import (
 	"encoding/json"
@@ -15,12 +15,12 @@ import (
 
 	"REST_Server/internal/errors"
 	"REST_Server/internal/handler"
+	"REST_Server/internal/handler/fake"
 	"REST_Server/internal/model"
-	"REST_Server/internal/tests/fakes"
 )
 
 var (
-	fakeTestService = &fakes.FakeTaskService{}
+	fakeTestService = &fake.FakeTaskService{}
 	testHandler     = handler.NewHandler(fakeTestService)
 	router          = setupRouter()
 )
