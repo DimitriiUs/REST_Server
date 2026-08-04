@@ -7,4 +7,5 @@ var (
 	ErrInvalidID          = errors.New("invalid id")
 	ErrInvalidDescription = errors.New("invalid description")
 	ErrInvalidDueDate     = errors.New("invalid due date")
+	ErrInvalidLogLevel    = errors.New("invalid log level")
 )

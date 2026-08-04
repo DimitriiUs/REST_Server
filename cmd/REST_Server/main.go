@@ -9,25 +9,34 @@ import (
 
 	"REST_Server/internal/config"
 	"REST_Server/internal/handler"
+	"REST_Server/internal/logger"
 	"REST_Server/internal/repository/postgresql"
 	"REST_Server/internal/service"
 )
 
 func main() {
-	config.LoadPostgresConfig()
+	cfg := config.GetConfig()
+	lg,err:=logger.New(cfg.LogLevel)
+	if err!=nil{
+		lg.Error(err.Error())
+	}
+	
 
-	pool, err := pgxpool.New(context.Background(), config.GetDBUrl())
+	pool, err := pgxpool.New(context.Background(), cfg.Postgres.DBURL)
 	if err != nil {
-		log.Fatalf("Unable to connection to database: %v\n", err)
+		lg.Error("%w: unable to connection to database",err.Error())
 	}
 	defer pool.Close()
 
 	repo := postgresql.NewRepo(pool)
-	taskService := service.NewService(repo)
+	taskService := service.NewService(repo,lg)
 	taskHandler := handler.NewHandler(taskService)
 
 	server := gin.Default()
 	handler.RegisterRoutes(server, taskHandler)
 
-	server.Run()
+	err = server.Run()
+	if err != nil {
+		log.Panicf("Unable to start server: %v\n", err)
+	}
 }
