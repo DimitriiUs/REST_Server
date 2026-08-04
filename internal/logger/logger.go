@@ -34,5 +34,9 @@ func New(logLevel string) (*slog.Logger, error) {
 		Level: lvl,
 	})
 
-	return slog.New(handler), nil
+	lg:=slog.New(handler)
+
+	lg.Info("set logger", "level:", lvl.String())
+
+	return lg, nil
 }

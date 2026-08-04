@@ -1,6 +1,8 @@
 package service_test
 
 import (
+	"io"
+	"log/slog"
 	"testing"
 	"time"
 
@@ -14,8 +16,12 @@ import (
 
 var (
 	fakeTestRepo = &fake.FakeTaskRepository{}
-	testService  = service.NewService(fakeTestRepo)
+	testService  = service.NewService(fakeTestRepo,newTestLogger())
 )
+
+func newTestLogger() *slog.Logger {
+	return slog.New(slog.NewTextHandler(io.Discard, nil))
+}
 
 func TestServiceGetAllTasks_Empty(t *testing.T) {
 	fakeTestRepo.GetAllTasksReturns([]model.Task{}, nil)

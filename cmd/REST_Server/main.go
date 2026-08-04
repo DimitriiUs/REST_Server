@@ -24,7 +24,7 @@ func main() {
 
 	pool, err := pgxpool.New(context.Background(), cfg.Postgres.DBURL)
 	if err != nil {
-		lg.Error("%w: unable to connection to database",err.Error())
+		lg.Error("unable to connection to database", "error",err.Error())
 	}
 	defer pool.Close()
 
