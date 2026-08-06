@@ -33,14 +33,10 @@ func NewHandler(service TaskService) *handler {
 func (h *handler) GetAllTasks(c *gin.Context) {
 	tasks, err := h.service.GetAllTasks()
 
-	if errors.Is(err, errs.ErrNotFound) {
-		c.String(http.StatusNotFound, err.Error())
-		return
-	}
 	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
+		handleError(c, err)
 	}
+
 	c.JSON(http.StatusOK, tasks)
 }
 
@@ -48,16 +44,11 @@ func (h *handler) GetTaskByID(c *gin.Context) {
 	ids := c.Param("id")
 
 	task, err := h.service.GetTaskByID(ids)
-	if errors.Is(err, errs.ErrNotFound) {
-		c.String(http.StatusNotFound, err.Error())
-		return
-	} else if errors.Is(err, errs.ErrInvalidID) {
-		c.String(http.StatusBadRequest, err.Error())
-		return
-	} else if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
+
+	if err != nil {
+		handleError(c, err)
 	}
+
 	c.JSON(http.StatusOK, gin.H{"id": task.ID, "text": task.Text, "due": task.Due})
 }
 
@@ -74,15 +65,9 @@ func (h *handler) CreateTask(c *gin.Context) {
 	}
 
 	id, err := h.service.CreateTask(rt.Text, rt.Due)
-	if errors.Is(err, errs.ErrInvalidDescription) {
-		c.String(http.StatusBadRequest, err.Error())
-		return
-	} else if errors.Is(err, errs.ErrInvalidDueDate) {
-		c.String(http.StatusBadRequest, err.Error())
-		return
-	} else if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
+
+	if err != nil {
+		handleError(c, err)
 	}
 
 	c.JSON(http.StatusCreated, gin.H{"id": id})
@@ -93,28 +78,21 @@ func (h *handler) DeleteTaskByID(c *gin.Context) {
 
 	err := h.service.DeleteTaskByID(ids)
 
-	if errors.Is(err, errs.ErrNotFound) {
-		c.String(http.StatusNotFound, err.Error())
-		return
-	} else if errors.Is(err, errs.ErrInvalidID) {
-		c.String(http.StatusBadRequest, err.Error())
-		return
-	} else if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
+	if err != nil {
+		handleError(c, err)
 	}
-	msg := "task was deleted"
-	c.String(http.StatusNoContent, msg)
+
+	c.String(http.StatusNoContent, "task was deleted")
 }
 
 func (h *handler) DeleteAllTasks(c *gin.Context) {
 	err := h.service.DeleteAllTasks()
+
 	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
+		handleError(c, err)
 	}
-	msg := "all tasks was deleted"
-	c.String(http.StatusNoContent, msg)
+
+	c.String(http.StatusNoContent, "all tasks was deleted")
 }
 
 func (h *handler) GetTasksByDue(c *gin.Context) {
@@ -123,15 +101,25 @@ func (h *handler) GetTasksByDue(c *gin.Context) {
 	day := c.Param("day")
 
 	tasks, err := h.service.GetTasksByDue(year, month, day)
-	if errors.Is(err, errs.ErrNotFound) {
-		c.String(http.StatusNotFound, err.Error())
-		return
-	} else if errors.Is(err, errs.ErrInvalidDueDate) {
-		c.String(http.StatusBadRequest, err.Error())
-		return
-	} else if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
+
+	if err != nil {
+		handleError(c, err)
 	}
+
 	c.JSON(http.StatusOK, tasks)
+}
+
+func handleError(c *gin.Context,err error) {
+	switch {
+	case errors.Is(err, errs.ErrNotFound):
+		c.String(http.StatusNotFound, err.Error())
+	case errors.Is(err, errs.ErrInvalidID):
+		c.String(http.StatusBadRequest, err.Error())
+	case errors.Is(err, errs.ErrInvalidDescription):
+		c.String(http.StatusBadRequest, err.Error())
+		case errors.Is(err, errs.ErrInvalidDueDate):
+			c.String(http.StatusBadRequest, err.Error())
+		default:
+			c.String(http.StatusInternalServerError, "internal server error")
+	}
 }

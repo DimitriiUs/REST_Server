@@ -2,6 +2,7 @@ package handler_test
 
 import (
 	"encoding/json"
+	errors2 "errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -181,7 +182,7 @@ func TestHandlerDeleteAllTasks_Success(t *testing.T) {
 }
 
 func TestHandlerDeleteAllTasks_Fail(t *testing.T) {
-	fakeTestService.DeleteAllTasksReturns(errors.ErrNotFound)
+	fakeTestService.DeleteAllTasksReturns(errors2.New("test error"))
 
 	resp := testRequestResponse("/tasks", "DELETE", nil)
 
